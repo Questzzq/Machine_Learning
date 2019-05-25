@@ -12,7 +12,9 @@ Course homework for Machine Learning
 ---
 ### 5.25
 + **data** 保存 **train.csv**
-+ **features** 保存 **train.csv** 的特征
-+ **prices** 保存 **train.csv** 的目标值
++ **features** 保存 **train.csv** 的里的13维特征
++ **prices** 保存 **train.csv** 的目标值，即房价
 ---
-+ **test_features** 保存 **test.csv**，即保存 **test.csv** 的特征
++ **test_features** 保存 **test.csv**，即保存 **test.csv** 的13维特征
+---
++ 评估函数我还没改，用我的方法则是 越接近 1 越好

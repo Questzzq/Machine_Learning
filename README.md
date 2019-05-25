@@ -10,3 +10,9 @@ Course homework for Machine Learning
 6. 可以开始构建神经网络了 **@彬彬**
 7. 可以开始文档和 PPT 了 **@盛权**
 ---
+### 5.25
++ **data** 保存 **train.csv**
++ **features** 保存 **train.csv** 的特征
++ **prices** 保存 **train.csv** 的目标值
+---
++ **test_features** 保存 **test.csv**，即保存 **test.csv** 的特征

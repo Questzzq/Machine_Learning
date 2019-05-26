@@ -19,4 +19,7 @@ Course homework for Machine Learning
 ---
 + 评估函数我还没改，用我的方法则是 越接近 1 越好
 
+### 5.26
++ 添加了dnn训练部分, 参数还需要调整
+
 

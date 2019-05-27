@@ -373,7 +373,7 @@ history = model.fit(
     verbose=2,
     callbacks=[
         early_stop,
-        # cp_callback,
+        cp_callback,
         # PrintDot()
     ]
 )

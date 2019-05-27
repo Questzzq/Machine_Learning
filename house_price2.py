@@ -187,6 +187,11 @@ features
 #
 # 自定义一个最小最大规范化的函数
 
+train_stats = features.describe()
+# train_stats.pop("medv")
+train_stats = train_stats.transpose()
+train_stats
+
 
 def minmax_normalization(data):
     xs_max = np.max(data, axis=0)
@@ -195,11 +200,15 @@ def minmax_normalization(data):
     return xs
 
 
+def norm(x):
+    return (x - train_stats['mean']) / train_stats['std']
+
+
 #
 # 将 data 传入上面的规范化函数
 # 规范化得到的数据存放在 m_n_data 中
-m_n_data = minmax_normalization(data)
-m_n_data.head()
+# m_n_data = minmax_normalization(data)
+# m_n_data.head()
 
 # [markdown]
 # ##### 4.2 划分训练集/验证集
@@ -208,9 +217,12 @@ m_n_data.head()
 # #### 将数据集分成训练集和测试集的好处：既可以用于训练又可以用于测试，而且不会相互干扰，而且可以对训练模型进行有效的验证。
 
 #
-m_n_features = m_n_data.drop('medv', axis=1)
-m_n_prices = m_n_data['medv']
-m_n_features.drop('ID', inplace=True, axis=1)
+# m_n_features = m_n_data.drop('medv', axis=1)
+m_n_prices = prices
+
+m_n_features = norm(features)
+
+# m_n_features.drop('ID', inplace=True, axis=1)
 
 #
 # Split the dataset as traing set and testing set
@@ -248,17 +260,25 @@ def performance_metric(y_true, y_predict):
 
 #
 def build_model():
+    drop_percent = 0.5
+    l2_value = 0.1
     model = keras.Sequential([
-        layers.Dense(128, activation='relu', input_shape=(13,)),
-        layers.Dropout(0.5),
-        layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
-        layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dense(256, activation='relu', kernel_regularizer=keras.regularizers.l2(
+            l2_value), input_shape=(13,)),
+        layers.Dropout(drop_percent),
+        layers.Dense(256, activation='relu',
+                     kernel_regularizer=keras.regularizers.l2(l2_value)),
+        layers.Dropout(drop_percent),
+        layers.Dense(256, activation='relu',
+                     kernel_regularizer=keras.regularizers.l2(l2_value)),
+        layers.Dropout(drop_percent),
+        layers.Dense(256, activation='relu',
+                     kernel_regularizer=keras.regularizers.l2(l2_value)),
+        layers.Dropout(drop_percent),
         layers.Dense(1)
     ])
 
-    optimizer = tf.keras.optimizers.RMSprop(0.01)
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
 
     model.compile(loss='mse',
                   optimizer=optimizer,
@@ -278,6 +298,7 @@ class PrintDot(keras.callbacks.Callback):
 
 
 def plot_history(history):
+    y_max = 500
     hist = pd.DataFrame(history.history)
     hist['epoch'] = history.epoch
 
@@ -289,7 +310,7 @@ def plot_history(history):
              label='Train Error')
     plt.plot(hist['epoch'], hist['val_mae'],
              label='Val Error')
-    plt.ylim([0, 1])
+    plt.ylim([0, y_max])
     plt.legend()
 
     plt.subplot(312)
@@ -299,7 +320,7 @@ def plot_history(history):
              label='Train Error')
     plt.plot(hist['epoch'], hist['val_mse'],
              label='Val Error')
-    plt.ylim([0, 1])
+    plt.ylim([0, y_max])
     plt.legend()
 
     plt.subplot(313)
@@ -309,13 +330,10 @@ def plot_history(history):
              label='Train Error')
     plt.plot(hist['epoch'], hist['val_loss'],
              label='Val Error')
-    plt.ylim([0, 1])
+    plt.ylim([0, y_max])
     plt.legend()
 
     plt.show()
-
-
-
 
 
 model = build_model()
@@ -327,10 +345,12 @@ keras.utils.plot_model(model, 'my_first_model.png')
 keras.utils.plot_model(
     model, 'my_first_model_with_shape_info.png', show_shapes=True)
 
-EPOCHS = 100
+EPOCHS = 10000
 
 # The patience parameter is the amount of epochs to check for improvement
-early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',
+                                           patience=100,
+                                           restore_best_weights=True)
 
 checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -340,14 +360,29 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 
-history = model.fit(m_n_features, m_n_prices, epochs=EPOCHS,
-                    validation_split = 0.2, verbose=0, callbacks=[early_stop, cp_callback, PrintDot()])
+print(features.head())
+print(prices.head())
 
+
+history = model.fit(
+    m_n_features,
+    m_n_prices,
+    epochs=EPOCHS,
+    validation_split=0.2,
+    batch_size=50,
+    verbose=2,
+    callbacks=[
+        early_stop,
+        # cp_callback,
+        # PrintDot()
+    ]
+)
 
 
 test_data = pd.read_csv('./Row_Data/test.csv')
 predictions = pd.DataFrame(test_data["ID"])
-test =  test_data.drop("ID", axis=1)
+test_data.drop('ID', inplace=True, axis=1)
+test = norm(test_data)
 
 test_predictions = model.predict(test).flatten()
 predictions["medv"] = test_predictions

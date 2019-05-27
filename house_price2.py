@@ -260,7 +260,7 @@ def performance_metric(y_true, y_predict):
 
 #
 def build_model():
-    drop_percent = 0.5
+    drop_percent = 0.515
     l2_value = 0.1
     model = keras.Sequential([
         layers.Dense(256, activation='relu', kernel_regularizer=keras.regularizers.l2(

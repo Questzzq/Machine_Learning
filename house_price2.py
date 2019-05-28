@@ -260,7 +260,7 @@ def performance_metric(y_true, y_predict):
 
 #
 def build_model():
-    drop_percent = 0.515
+    drop_percent = 0.51
     l2_value = 0.1
     model = keras.Sequential([
         layers.Dense(256, activation='relu', kernel_regularizer=keras.regularizers.l2(
@@ -392,6 +392,21 @@ predictions.to_csv("./Row_Data/output.csv", encoding='utf-8', index=False)
 
 plot_history(history)
 
+model.load_weights('training_1/cp.ckpt')
+
+
+test_predictions = model.predict(m_n_features).flatten()
+
+plt.scatter(m_n_prices, test_predictions)
+plt.xlabel('True Values')
+plt.ylabel('Predictions')
+plt.axis('equal')
+plt.axis('square')
+plt.xlim([0,plt.xlim()[1]])
+plt.ylim([0,plt.ylim()[1]])
+_ = plt.plot([-100, 100], [-100, 100])
+
+plt.show()
 # [markdown]
 # #### 7. 利用测试集评估学习结果
 

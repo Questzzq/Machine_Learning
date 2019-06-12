@@ -1,4 +1,4 @@
-# Machine_Learning
+﻿# Machine_Learning
 Course homework for Machine Learning
 ---
 ### 5.21
@@ -21,5 +21,6 @@ Course homework for Machine Learning
 
 ### 5.26
 + 添加了dnn训练部分, 参数还需要调整
++ 最终代码：house_price2.py
 
 
